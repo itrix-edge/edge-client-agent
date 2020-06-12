@@ -1,175 +1,92 @@
 package models
 
 import (
-	"fmt"
-	"net/http"
-	"os"
-	"strconv"
-	"strings"
-	"time"
+	"errors"
 
 	"github.com/stevennick/edge-client-agent/db"
+	"github.com/stevennick/edge-client-agent/forms"
 
-	"github.com/dgrijalva/jwt-go"
-	uuid "github.com/twinj/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
-//TokenDetails ...
-type TokenDetails struct {
-	AccessToken  string
-	RefreshToken string
-	AccessUUID   string
-	RefreshUUID  string
-	AtExpires    int64
-	RtExpires    int64
+//User ...
+type User struct {
+	ID        int64  `db:"id, primarykey, autoincrement" json:"id"`
+	Email     string `db:"email" json:"email"`
+	Password  string `db:"password" json:"-"`
+	Name      string `db:"name" json:"name"`
+	UpdatedAt int64  `db:"updated_at" json:"-"`
+	CreatedAt int64  `db:"created_at" json:"-"`
 }
 
-//AccessDetails ...
-type AccessDetails struct {
-	AccessUUID string
-	UserID     int64
-}
+//UserModel ...
+type UserModel struct{}
 
-//Token ...
-type Token struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-}
+var authModel = new(AuthModel)
 
-//AuthModel ...
-type AuthModel struct{}
+//Login ...
+func (m UserModel) Login(form forms.LoginForm) (user User, token Token, err error) {
 
-//CreateToken ...
-func (m AuthModel) CreateToken(userID int64) (*TokenDetails, error) {
+	err = db.GetDB().SelectOne(&user, "SELECT id, email, password, name, updated_at, created_at FROM public.user WHERE email=LOWER($1) LIMIT 1", form.Email)
 
-	td := &TokenDetails{}
-	td.AtExpires = time.Now().Add(time.Minute * 15).Unix()
-	td.AccessUUID = uuid.NewV4().String()
-
-	td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
-	td.RefreshUUID = uuid.NewV4().String()
-
-	var err error
-	//Creating Access Token
-	atClaims := jwt.MapClaims{}
-	atClaims["authorized"] = true
-	atClaims["access_uuid"] = td.AccessUUID
-	atClaims["user_id"] = userID
-	atClaims["exp"] = td.AtExpires
-
-	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
-	td.AccessToken, err = at.SignedString([]byte(os.Getenv("ACCESS_SECRET")))
 	if err != nil {
-		return nil, err
+		return user, token, err
 	}
-	//Creating Refresh Token
-	rtClaims := jwt.MapClaims{}
-	rtClaims["refresh_uuid"] = td.RefreshUUID
-	rtClaims["user_id"] = userID
-	rtClaims["exp"] = td.RtExpires
-	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
-	td.RefreshToken, err = rt.SignedString([]byte(os.Getenv("REFRESH_SECRET")))
+
+	//Compare the password form and database if match
+	bytePassword := []byte(form.Password)
+	byteHashedPassword := []byte(user.Password)
+
+	err = bcrypt.CompareHashAndPassword(byteHashedPassword, bytePassword)
+
 	if err != nil {
-		return nil, err
+		return user, token, errors.New("Invalid password")
 	}
-	return td, nil
+
+	//Generate the JWT auth token
+	tokenDetails, err := authModel.CreateToken(user.ID)
+
+	saveErr := authModel.CreateAuth(user.ID, tokenDetails)
+	if saveErr == nil {
+		token.AccessToken = tokenDetails.AccessToken
+		token.RefreshToken = tokenDetails.RefreshToken
+	}
+
+	return user, token, nil
 }
 
-//CreateAuth ...
-func (m AuthModel) CreateAuth(userid int64, td *TokenDetails) error {
-	at := time.Unix(td.AtExpires, 0) //converting Unix to UTC(to Time object)
-	rt := time.Unix(td.RtExpires, 0)
-	now := time.Now()
+//Register ...
+func (m UserModel) Register(form forms.RegisterForm) (user User, err error) {
+	getDb := db.GetDB()
 
-	errAccess := db.GetRedis().Set(td.AccessUUID, strconv.Itoa(int(userid)), at.Sub(now)).Err()
-	if errAccess != nil {
-		return errAccess
-	}
-	errRefresh := db.GetRedis().Set(td.RefreshUUID, strconv.Itoa(int(userid)), rt.Sub(now)).Err()
-	if errRefresh != nil {
-		return errRefresh
-	}
-	return nil
-}
+	//Check if the user exists in database
+	checkUser, err := getDb.SelectInt("SELECT count(id) FROM public.user WHERE email=LOWER($1) LIMIT 1", form.Email)
 
-//ExtractToken ...
-func (m AuthModel) ExtractToken(r *http.Request) string {
-	bearToken := r.Header.Get("Authorization")
-	//normally Authorization the_token_xxx
-	strArr := strings.Split(bearToken, " ")
-	if len(strArr) == 2 {
-		return strArr[1]
-	}
-	return ""
-}
-
-//VerifyToken ...
-func (m AuthModel) VerifyToken(r *http.Request) (*jwt.Token, error) {
-	tokenString := m.ExtractToken(r)
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		//Make sure that the token method conform to "SigningMethodHMAC"
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(os.Getenv("ACCESS_SECRET")), nil
-	})
 	if err != nil {
-		return nil, err
+		return user, err
 	}
-	return token, nil
+
+	if checkUser > 0 {
+		return user, errors.New("User already exists")
+	}
+
+	bytePassword := []byte(form.Password)
+	hashedPassword, err := bcrypt.GenerateFromPassword(bytePassword, bcrypt.DefaultCost)
+	if err != nil {
+		panic(err) //Something really went wrong here...
+	}
+
+	//Create the user and return back the user ID
+	err = getDb.QueryRow("INSERT INTO public.user(email, password, name) VALUES($1, $2, $3) RETURNING id", form.Email, string(hashedPassword), form.Name).Scan(&user.ID)
+
+	user.Name = form.Name
+	user.Email = form.Email
+
+	return user, err
 }
 
-//TokenValid ...
-func (m AuthModel) TokenValid(r *http.Request) error {
-	token, err := m.VerifyToken(r)
-	if err != nil {
-		return err
-	}
-	if _, ok := token.Claims.(jwt.Claims); !ok && !token.Valid {
-		return err
-	}
-	return nil
-}
-
-//ExtractTokenMetadata ...
-func (m AuthModel) ExtractTokenMetadata(r *http.Request) (*AccessDetails, error) {
-	token, err := m.VerifyToken(r)
-	if err != nil {
-		return nil, err
-	}
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if ok && token.Valid {
-		accessUUID, ok := claims["access_uuid"].(string)
-		if !ok {
-			return nil, err
-		}
-		userID, err := strconv.ParseInt(fmt.Sprintf("%.f", claims["user_id"]), 10, 64)
-		if err != nil {
-			return nil, err
-		}
-		return &AccessDetails{
-			AccessUUID: accessUUID,
-			UserID:     userID,
-		}, nil
-	}
-	return nil, err
-}
-
-//FetchAuth ...
-func (m AuthModel) FetchAuth(authD *AccessDetails) (int64, error) {
-	userid, err := db.GetRedis().Get(authD.AccessUUID).Result()
-	if err != nil {
-		return 0, err
-	}
-	userID, _ := strconv.ParseInt(userid, 10, 64)
-	return userID, nil
-}
-
-//DeleteAuth ...
-func (m AuthModel) DeleteAuth(givenUUID string) (int64, error) {
-	deleted, err := db.GetRedis().Del(givenUUID).Result()
-	if err != nil {
-		return 0, err
-	}
-	return deleted, nil
+//One ...
+func (m UserModel) One(userID int64) (user User, err error) {
+	err = db.GetDB().SelectOne(&user, "SELECT id, email, name FROM public.user WHERE id=$1", userID)
+	return user, err
 }

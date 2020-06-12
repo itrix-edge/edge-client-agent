@@ -57,4 +57,3 @@ func ConvertToInt64(number interface{}) int64 {
 	}
 	return number.(int64)
 }
-© 2020 GitHub, Inc.
