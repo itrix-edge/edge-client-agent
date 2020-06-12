@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"models"
+	"github.com/stevennick/edge-client-agent/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

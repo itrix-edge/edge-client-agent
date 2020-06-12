@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"forms"
-	"models"
+	"github.com/stevennick/edge-client-agent/forms"
+	"github.com/stevennick/edge-client-agent/models"
 
 	"net/http"
 

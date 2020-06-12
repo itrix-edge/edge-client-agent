@@ -24,8 +24,8 @@ import (
 	"os"
 	"runtime"
 
-	"controllers"
-	"db"
+	"github.com/stevennick/edge-client-agent/controllers"
+	"github.com/stevennick/edge-client-agent/db"
 
 	//
 	// Uncomment to load all auth plugins
