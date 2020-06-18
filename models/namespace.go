@@ -8,11 +8,11 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-type NamsepaceModel struct{}
+type NamespaceModel struct{}
 
 var clientset kubernetes.Clientset
 
-func (m NamsepaceModel) InClusterConfig() kubernetes.Clientset {
+func (m NamespaceModel) InClusterConfig() kubernetes.Clientset {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		panic(err.Error())
@@ -25,7 +25,7 @@ func (m NamsepaceModel) InClusterConfig() kubernetes.Clientset {
 	return *clientset
 }
 
-func (m NamsepaceModel) GetNamespace(opts v1.ListOptions) (rv1.NamespaceList, error) {
+func (m NamespaceModel) GetNamespaces(opts v1.ListOptions) (rv1.NamespaceList, error) {
 	list, err := clientset.CoreV1().Namespaces().List(opts)
 	if err != nil {
 		return *list, err

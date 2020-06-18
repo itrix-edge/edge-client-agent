@@ -1,10 +1,12 @@
 package controllers
 
 import (
-	"github.com/stevennick/edge-client-agent/models"
 	"net/http"
 
+	"github.com/stevennick/edge-client-agent/models"
+
 	"github.com/gin-gonic/gin"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 /**
@@ -13,13 +15,15 @@ import (
 type NamespaceController struct{}
 
 var namespaceModel = new(models.NamespaceModel)
+var k8sclient = namespaceModel.InClusterConfig()
 
 /**
  *  GetNamespaces get all namespaces in the cluster
  */
 func (nc NamespaceController) GetNamespaces(c *gin.Context) {
 
-	list, err := namespaceModel.GetNamespaces()
+	options := v1.ListOptions{}
+	list, err := namespaceModel.GetNamespaces(options)
 	// user, token, err := userModel.Login(loginForm)
 	if err == nil {
 		c.JSON(http.StatusOK, gin.H{"data": list})
