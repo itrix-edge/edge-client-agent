@@ -12,17 +12,19 @@ require (
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-gorp/gorp v2.2.0+incompatible
 	github.com/go-redis/redis/v7 v7.3.0
+	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/gophercloud/gophercloud v0.11.0 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/imdario/mergo v0.3.9 // indirect
 	github.com/joho/godotenv v1.3.0
 	github.com/lib/pq v1.5.2
-	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/twinj/uuid v1.0.0
-	golang.org/x/crypto v0.0.0-20200604202706-70a84ac30bf9 // indirect
+	golang.org/x/crypto v0.0.0-20200604202706-70a84ac30bf9
+	golang.org/x/exp v0.0.0-20200224162631-6cc2880d07d6 // indirect
 	golang.org/x/net v0.0.0-20200602114024-627f9648deb9 // indirect
 	golang.org/x/time v0.0.0-20200416051211-89c76fbcd5d1 // indirect
 	golang.org/x/tools v0.0.0-20200611032120-1fdcbd130028 // indirect
+	google.golang.org/appengine v1.6.6 // indirect
 	k8s.io/api v0.18.3
 	k8s.io/apimachinery v0.18.3
 	k8s.io/client-go v0.16.10
