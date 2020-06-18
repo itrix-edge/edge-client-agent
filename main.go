@@ -90,7 +90,7 @@ func main() {
 	r := gin.Default()
 
 	//Load the .env file
-	err := godotenv.Load()
+	err := godotenv.Load("/config/.env", "/.env")
 	if err != nil {
 		log.Fatal("Error loading .env file, please create one in the root directory")
 	}
