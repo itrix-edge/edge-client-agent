@@ -1,12 +1,19 @@
 language: go
 go:
-  - 1.13.x
+  # - 1.13.x
   - 1.14.x
-  - master
+  # - master
+
+arch:
+  - amd64
+  - arm64
+
+os: linux
 
 services:
   - redis-server
   - postgresql
+  - docker
 
 dist: trusty
 
@@ -32,4 +39,6 @@ install:
   - mkdir cert/ && sh generate-certificate.sh
 
 script:
-  - go test -v ./tests/*
+  - GOOS=linux go build -o ./app .
+  # - go test -v ./tests/*
+  - "docker build -t '$TRAVIS_REPO_SLUG:TRAVIS_PULL_REQUEST_SHA-$TRAVIS_CPU_ARCH' --platform $TRAVIS_CPU_ARCH -f Dockerfile ."
