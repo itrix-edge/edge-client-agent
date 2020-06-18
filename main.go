@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"os"
 	"runtime"
+	"strconv"
 
 	"github.com/stevennick/edge-client-agent/controllers"
 	"github.com/stevennick/edge-client-agent/db"
@@ -99,13 +100,20 @@ func main() {
 	r.Use(RequestIDMiddleware())
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
 
-	//Start PostgreSQL database
-	//Example: db.GetDB() - More info in the models folder
-	db.Init()
+	dbInit, err := strconv.ParseBool(os.Getenv("DB"))
+	if err != nil {
+		log.Fatal("Error parse .env file with key 'DB'")
+	}
 
-	//Start Redis on database 1 - it's used to store the JWT but you can use it for anythig else
-	//Example: db.GetRedis().Set(KEY, VALUE, at.Sub(now)).Err()
-	db.InitRedis("1")
+	if dbInit {
+		//Start PostgreSQL database
+		//Example: db.GetDB() - More info in the models folder
+		db.Init()
+
+		//Start Redis on database 1 - it's used to store the JWT but you can use it for anythig else
+		//Example: db.GetRedis().Set(KEY, VALUE, at.Sub(now)).Err()
+		db.InitRedis("1")
+	}
 
 	v1 := r.Group("/v1")
 	{
