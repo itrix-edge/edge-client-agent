@@ -11,34 +11,34 @@ arch:
 os: linux
 
 services:
-  - redis-server
-  - postgresql
+  # - redis-server
+  # - postgresql
   - docker
 
 dist: trusty
 
-addons:
-  postgresql: "9.6"
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - g++-4.8
-      - gcc-4.8
-      - clang
-      - postgresql-9.6-postgis-2.3
+# addons:
+#   postgresql: "9.6"
+#   apt:
+#     sources:
+#       - ubuntu-toolchain-r-test
+#     packages:
+#       - g++-4.8
+#       - gcc-4.8
+#       - clang
+#       - postgresql-9.6-postgis-2.3
 
-before_install:
-  - "psql -c 'create database golang_gin_db;' -U postgres"
-  - "psql golang_gin_db -c 'create extension postgis;' -U postgres"
-  - "psql -U postgres < ./db/database.sql"
-  - sleep 3
+# before_install:
+#   - "psql -c 'create database golang_gin_db;' -U postgres"
+#   - "psql golang_gin_db -c 'create extension postgis;' -U postgres"
+#   - "psql -U postgres < ./db/database.sql"
+#   - sleep 3
 
-install:
-  - mv .env_rename_me .env
-  - mkdir cert/ && sh generate-certificate.sh
+# install:
+#   - mv .env_rename_me .env
+#   - mkdir cert/ && sh generate-certificate.sh
 
 script:
   - GOOS=linux go build -o ./app .
   # - go test -v ./tests/*
-  - "docker build -t '$TRAVIS_REPO_SLUG:TRAVIS_PULL_REQUEST_SHA-$TRAVIS_CPU_ARCH' --platform $TRAVIS_CPU_ARCH -f Dockerfile ."
+  - docker build -t "$TRAVIS_REPO_SLUG:$TRAVIS_PULL_REQUEST_SHA-$TRAVIS_CPU_ARCH" --platform $TRAVIS_CPU_ARCH -f Dockerfile .
