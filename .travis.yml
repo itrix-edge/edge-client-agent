@@ -38,7 +38,10 @@ dist: trusty
 #   - mv .env_rename_me .env
 #   - mkdir cert/ && sh generate-certificate.sh
 
+before_script:
+  - export GIT_COMMIT=`git rev-parse --short HEAD`
+
 script:
   - GOOS=linux go build -o ./app .
   # - go test -v ./tests/*
-  - docker build -t "$TRAVIS_REPO_SLUG:$TRAVIS_PULL_REQUEST_SHA-$TRAVIS_CPU_ARCH" --platform $TRAVIS_CPU_ARCH -f Dockerfile .
+  - docker build -t "$TRAVIS_REPO_SLUG:$GIT_COMMIT-$TRAVIS_CPU_ARCH" --platform $TRAVIS_CPU_ARCH -f Dockerfile .
