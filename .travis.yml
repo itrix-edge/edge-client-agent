@@ -10,6 +10,10 @@ arch:
 
 os: linux
 
+env:
+  - secure: "daJCSIHcgxe9fjbEuyuoWc738g7WR6o3u/h/qCOnytAZVECvJLTPy1I0V2uSedKBGULxdkBveCSA2k51Gu+TfaAFHJj36L0swoPs022LV45QQF6AiJrnAcsR+5LWUKZZIDGPR92YJ8A51V4qJkyZmlltc69cH7odXtLpwYs9bc1s58FU0IIqSnm7t1YcqxbKPm75QXcmF9eLogu/1GjBmNOCOeiCkX0DK6YVq1OLXkWA5cHbMeerjI9+/0U1qtkuP2i3oQYF0CVk/PTDH3Yr8ECf9BeIO1SxbpOigpPYfDrRj7DOOlCdmT1lOe4dg5BaZAnN4H4hGYwbX5wObYaCdw76cYhrhNtyxTRkj0cb6FAH6qDqvfFhvRjiLUAGQLoTFdMcDV38kSUhimc+HT5ZejTReUkNvCi7X2Q1o24tpR334jWu3omfso1Sr6L4AI1fez6Zy3xmUmTTOWH6GnmErinnLSiiTPw6gYNq4rC/wZha1usaOsGeDwg9lgbJzeH/hI/OKG4WGnoaR4gTUc7r4wQpRi02wOckHojbjzcJefIABVgsTLC7F4E9bCnfiMW8jLMa+Rur4Mmu0zwjzbVQQIf3zckJ0JQH5nHnTz1sDq//BCgLoVsHcWX5POj49LQLU6x55EuSacVy0Wc1rXtWK1rf+I7CRe3PuXPPsShtahw="
+  - DOCKER_HUB_USERNAME=$DOCKER_USERNAME
+
 services:
   # - redis-server
   # - postgresql
@@ -45,3 +49,5 @@ script:
   - GOOS=linux go build -o ./app .
   # - go test -v ./tests/*
   - docker build -t "$TRAVIS_REPO_SLUG:$GIT_COMMIT-$TRAVIS_CPU_ARCH" -f Dockerfile .
+  - echo "$DOCKER_HUB_ACCESS_TOKEN" | docker login -u "$DOCKER_HUB_USERNAME" --password-stdin
+  - docker push "$TRAVIS_REPO_SLUG:$GIT_COMMIT-$TRAVIS_CPU_ARCH"
