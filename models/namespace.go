@@ -12,17 +12,17 @@ type NamespaceModel struct{}
 
 var clientset kubernetes.Clientset
 
-func (m NamespaceModel) InClusterConfig() kubernetes.Clientset {
+func (m NamespaceModel) init() {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		panic(err.Error())
 	}
 	// creates the clientset
-	clientset, err := kubernetes.NewForConfig(config)
+	localclientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		panic(err.Error())
 	}
-	return *clientset
+	clientset = *localclientset
 }
 
 func (m NamespaceModel) GetNamespaces(opts v1.ListOptions) (rv1.NamespaceList, error) {

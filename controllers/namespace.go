@@ -15,7 +15,6 @@ import (
 type NamespaceController struct{}
 
 var namespaceModel = new(models.NamespaceModel)
-var k8sclient = namespaceModel.InClusterConfig()
 
 /**
  *  GetNamespaces get all namespaces in the cluster
