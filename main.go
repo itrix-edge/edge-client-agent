@@ -25,6 +25,8 @@ import (
 	"runtime"
 	"strconv"
 
+	"github.com/gin-contrib/gzip"
+	"github.com/joho/godotenv"
 	"github.com/stevennick/edge-client-agent/controllers"
 	"github.com/stevennick/edge-client-agent/db"
 
@@ -38,11 +40,12 @@ import (
 	// _ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	// _ "k8s.io/client-go/plugin/pkg/client/auth/openstack"
 
-	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	uuid "github.com/twinj/uuid"
 )
+
+const LOCAL_ENV = ".env"
+const SYSTEM_ENV = "/config/.env"
 
 //CORSMiddleware ...
 //CORS (Cross-Origin Resource Sharing)
@@ -85,13 +88,28 @@ func TokenAuthMiddleware() gin.HandlerFunc {
 	}
 }
 
+// FileExists checks env and change them between local and system level.
+func FileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
+}
+
 func main() {
 
 	//Start the default gin server
 	r := gin.Default()
-
+	var env string
+	if FileExists(SYSTEM_ENV) {
+		env = SYSTEM_ENV
+	}
+	if FileExists(LOCAL_ENV) {
+		env = LOCAL_ENV
+	}
 	//Load the .env file
-	err := godotenv.Load("/config/.env")
+	err := godotenv.Load(env)
 	if err != nil {
 		log.Fatal("Error loading .env file, please create one in the root directory")
 	}
@@ -136,6 +154,11 @@ func main() {
 		v1.GET("/namespaces", namespace.GetNamespaces)
 
 		/*** Deployment ***/
+
+		deployment := new(controllers.DeploymentController)
+
+		v1.GET("/deployments", deployment.GetDeployments)
+		v1.POST("/deployments", deployment.CreateNewDeployment)
 		/*** Services ***/
 		/*** Presistent Volume ***/
 		/*** Presistent Volume Clain ***/
