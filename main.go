@@ -126,11 +126,18 @@ func main() {
 	if dbInit {
 		//Start PostgreSQL database
 		//Example: db.GetDB() - More info in the models folder
-		db.Init()
+		dbDSN := fmt.Sprintf("user=%s password=%s DB.name=%s host=%s port=%s %s", os.Getenv("DB_USER"), os.Getenv("DB_PASS"), os.Getenv("DB_NAME"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_OPTIONS"))
+		debugFlag := os.Getenv("APP_DEBUG")
+		debug, err := strconv.ParseBool(debugFlag)
+		if err != nil {
+			log.Fatal("Error parse .env file DEBUG flag parse fail.")
+		}
+		db.Init(dbDSN, debug)
+		// db.InitORM()
 
 		//Start Redis on database 1 - it's used to store the JWT but you can use it for anythig else
 		//Example: db.GetRedis().Set(KEY, VALUE, at.Sub(now)).Err()
-		db.InitRedis("1")
+		// db.InitRedis("1")
 	}
 
 	v1 := r.Group("/v1")

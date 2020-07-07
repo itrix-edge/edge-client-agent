@@ -20,7 +20,7 @@ type DB struct {
 var db *gorp.DbMap
 
 //Init ...
-func Init() {
+func dbInit() {
 
 	dbinfo := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", os.Getenv("DB_USER"), os.Getenv("DB_PASS"), os.Getenv("DB_NAME"))
 
