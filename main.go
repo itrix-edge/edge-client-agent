@@ -1,5 +1,5 @@
 /*
-Copyright 202, the ITRIX-EDGE authors.
+Copyright 2020, Yi-Fu Ciou and the ITRIX-EDGE authors.
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -44,8 +44,8 @@ import (
 	uuid "github.com/twinj/uuid"
 )
 
-const LOCAL_ENV = ".env"
-const SYSTEM_ENV = "/config/.env"
+const LocalEnv = ".env"
+const SystemEnv = "/config/.env"
 
 //CORSMiddleware ...
 //CORS (Cross-Origin Resource Sharing)
@@ -102,11 +102,11 @@ func main() {
 	//Start the default gin server
 	r := gin.Default()
 	var env string
-	if FileExists(SYSTEM_ENV) {
-		env = SYSTEM_ENV
+	if FileExists(SystemEnv) {
+		env = SystemEnv
 	}
-	if FileExists(LOCAL_ENV) {
-		env = LOCAL_ENV
+	if FileExists(LocalEnv) {
+		env = LocalEnv
 	}
 	//Load the .env file
 	err := godotenv.Load(env)
@@ -163,13 +163,33 @@ func main() {
 		/*** Deployment ***/
 
 		deployment := new(controllers.DeploymentController)
+		v1.GET("/deployment", deployment.GetDeployments)
+		v1.POST("/deployment", deployment.CreateNewDeployment)
 
-		v1.GET("/deployments", deployment.GetDeployments)
-		v1.POST("/deployments", deployment.CreateNewDeployment)
+		/*** DeploymentOption ***/
+		deploymentOption := new(controllers.DeploymentOptionController)
+		v3 := v1.Group("/deploymentTemplate")
+		v1.GET("/migrate/deploymentTemplate", deploymentOption.MigrateDeploymentOption)
+		v3.GET("", deploymentOption.ListDeploymentOptions)
+		v3.POST("", deploymentOption.CreateDeploymentOption)
+		v3.GET("/:id", deploymentOption.ReadDeploymentOptionByID)
+		v3.PUT("/:id", deploymentOption.UpdateDeploymentOptionByID)
+		v3.DELETE("/:id", deploymentOption.DeleteDeploymentOptionByID)
 		/*** Services ***/
 		/*** Presistent Volume ***/
 		/*** Presistent Volume Clain ***/
 		/*** ConfigMap ***/
+		/*** Hook ***/
+		hooks := new(controllers.HookController)
+		v2 := v1.Group("/hook")
+		v1.GET("/migrate/hook", hooks.MigrateHook)
+		v2.GET("", hooks.ListHooks)
+		v2.POST("", hooks.CreateHook)
+		v2.GET("/:id", hooks.ReadHookByID)
+		v2.PUT("/:id", hooks.UpdateHookByID)
+		v2.DELETE("/:id", hooks.DeleteHookByID)
+		v2.POST("/:id", hooks.ExecuteHookByID)
+
 	}
 
 	r.LoadHTMLGlob("./public/html/*")

@@ -2,22 +2,14 @@ package models
 
 import (
 	appsv1 "k8s.io/api/apps/v1"
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	v1 "k8s.io/client-go/kubernetes/typed/apps/v1"
-
 	"k8s.io/client-go/rest"
 )
 
 type DeploymentModel struct{}
-
-type DeploymentOptions struct {
-	namespace string
-	image     string
-	name      string
-	ports     []int
-}
 
 // var clientset kubernetes.Clientset
 
@@ -46,7 +38,7 @@ func (m DeploymentModel) GetDeploymentsClient(namespace string) (v1.DeploymentIn
 		panic(err.Error())
 	}
 	if len(namespace) == 0 {
-		namespace = apiv1.NamespaceDefault
+		namespace = corev1.NamespaceDefault
 	}
 	deploymentsClient := clientset.AppsV1().Deployments(namespace)
 
@@ -119,21 +111,21 @@ func (m DeploymentModel) DeleteDeployment(namespace string, name string, deleteO
 // 					"app": plainOptions.name,
 // 				},
 // 			},
-// 			Template: apiv1.PodTemplateSpec{
+// 			Template: corev1.PodTemplateSpec{
 // 				ObjectMeta: metav1.ObjectMeta{
 // 					Labels: map[string]string{
 // 						"app": plainOptions.name,
 // 					},
 // 				},
-// 				Spec: apiv1.PodSpec{
-// 					Containers: []apiv1.Container{
+// 				Spec: corev1.PodSpec{
+// 					Containers: []corev1.Container{
 // 						{
 // 							Name:  plainOptions.name,
 // 							Image: plainOptions.image,
-// 							Ports: []apiv1.ContainerPort{
+// 							Ports: []corev1.ContainerPort{
 // 								{
 // 									Name:          "http",
-// 									Protocol:      apiv1.ProtocolTCP,
+// 									Protocol:      corev1.ProtocolTCP,
 // 									ContainerPort: 80,
 // 								},
 // 							},

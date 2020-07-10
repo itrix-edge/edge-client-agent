@@ -10,6 +10,7 @@ require (
 	github.com/go-redis/redis/v7 v7.3.0
 	github.com/joho/godotenv v1.3.0
 	github.com/lib/pq v1.5.2
+	github.com/ompluscator/dynamic-struct v1.2.0
 	github.com/twinj/uuid v1.0.0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/net v0.0.0-20200602114024-627f9648deb9 // indirect
