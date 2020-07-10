@@ -19,44 +19,58 @@ import (
 type DeploymentOptionModel struct{}
 
 type OptionTemplate struct {
-	Key   string `json:"name=key"`
-	Value string `json:"name=value"`
+	Key   string `json:"key"`
+	Value string `json:"value"`
 }
 
 type DeploymentOption struct {
-	ID                           uint              `gorm:"primarykey" json:"name=id"`
-	CreatedAt                    time.Time         `json:"name=created_at"`
-	UpdatedAt                    time.Time         `json:"name=updated_at"`
-	DeletedAt                    gorm.DeletedAt    `gorm:"index" json:"name=deleted_at"`
-	Namespace                    string            `json:"name=namespace"`
-	Options                      []OptionTemplate  `json:"name=options" gorm:"-"`
+	ID                           uint              `gorm:"primarykey" json:"id"`
+	CreatedAt                    time.Time         `json:"created_at"`
+	UpdatedAt                    time.Time         `json:"updated_at"`
+	DeletedAt                    gorm.DeletedAt    `gorm:"index" json:"deleted_at"`
+	Namespace                    string            `json:"namespace"`
+	Options                      []OptionTemplate  `json:"options" gorm:"-"`
 	OptionsSerialized            string            `json:"-"`
-	DeploymentTemplate           appsv1.Deployment `json:"name=deployment_template" gorm:"-"`
+	DeploymentTemplate           appsv1.Deployment `json:"deployment_template" gorm:"-"`
 	DeploymentTemplateSerialized string            `json:"-"` // appsv1.Deployment
-	ServiceTemplate              corev1.Service    `json:"name=service_template" gorm:"-"`
+	ServiceTemplate              corev1.Service    `json:"service_template" gorm:"-"`
 	ServiceTemplateSerialized    string            `json:"-"` // corev1.Service
-	// Image              string            `json:"name=image"`
-	// Name               string            `json:"name=name"`
-	// Ports              []int             `json:"name=ports"`
+	Hooks                        []Hook            `json:"hooks"`
+	// Image              string            `json:"image"`
+	// Name               string            `json:"name"`
+	// Ports              []int             `json:"ports"`
 }
 
 // BeforeSave Handle option struct serialized to json
 func (u *DeploymentOption) BeforeSave(gorm *gorm.DB) (err error) {
-	serialized, err := json.Marshal(u.Options)
-	if err != nil {
-		return err
-	}
-	u.OptionsSerialized = string(serialized)
+	u.OptionsSerialized = u.SerializeValue(u.Options)
+	u.DeploymentTemplateSerialized = u.SerializeValue(u.DeploymentTemplate)
+	u.ServiceTemplateSerialized = u.SerializeValue(u.ServiceTemplate)
 	return
+}
+
+// SerializeValue make struct serialized to json
+func (u *DeploymentOption) SerializeValue(v interface{}) string {
+	byteArray, err := json.Marshal(v)
+	if err != nil {
+		log.Fatal(err)
+		return ""
+	}
+	return string(byteArray)
+}
+
+// UnSerializeValue make serialized json to struct
+func (u *DeploymentOption) UnSerializeValue(values string, v interface{}) {
+	if err := json.Unmarshal([]byte(values), v); err != nil {
+		log.Fatal(err)
+	}
 }
 
 // AfterFind Handle serialized to json optionserialized to struct
 func (u *DeploymentOption) AfterFind(gorm *gorm.DB) (err error) {
-	var val []OptionTemplate
-	if err := json.Unmarshal([]byte(u.OptionsSerialized), &val); err != nil {
-		return err
-	}
-	u.Options = val
+	u.UnSerializeValue(u.OptionsSerialized, &u.Options)
+	u.UnSerializeValue(u.DeploymentTemplateSerialized, &u.DeploymentTemplate)
+	u.UnSerializeValue(u.ServiceTemplateSerialized, &u.ServiceTemplate)
 	return
 }
 

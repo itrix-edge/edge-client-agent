@@ -10,14 +10,14 @@ import (
 
 type Hook struct {
 	// gorm.Model
-	ID        uint           `gorm:"primarykey" json:"name=id"`
-	CreatedAt time.Time      `json:"name=created_at"`
-	UpdatedAt time.Time      `json:"name=updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"name=deleted_at"`
-	Name      string         `json:"name=name"`
-	Key       string         `json:"name=key"`
-	// DeploymentOptionID uint           `json:"name=deplyoment_option_id"`
-	DeploymentOption DeploymentOption `json:"name=deployment_option"`
+	ID                 uint           `gorm:"primarykey" json:"id"`
+	CreatedAt          time.Time      `json:"created_at"`
+	UpdatedAt          time.Time      `json:"updated_at"`
+	DeletedAt          gorm.DeletedAt `gorm:"index" json:"deleted_at"`
+	Name               string         `json:"name"`
+	Key                string         `json:"key"`
+	DeploymentOptionID uint           `json:"deplyoment_option_id"`
+	// DeploymentOption DeploymentOption `json:"deployment_option"`
 }
 
 // HookModel
@@ -86,7 +86,7 @@ func (m HookModel) DeleteHook(id int64) bool {
 func (m HookModel) ExecuteHook(id int64) bool {
 	hook := m.ReadHook(id)
 	m.GetExecutionModels()
-	status, err := deploymentOptionModel.ExecuteDeploymentByID(hook.DeploymentOption.ID)
+	status, err := deploymentOptionModel.ExecuteDeploymentByID(hook.DeploymentOptionID)
 	if err != nil {
 		log.Fatal(err)
 		return false

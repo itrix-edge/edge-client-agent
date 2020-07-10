@@ -10,9 +10,10 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${fileDirname}",
+            // "program": "${fileDirname}",
             "env": {},
-            "args": []
+            "args": [],
+            "program": "${workspaceFolder}/main.go"
         }
     ]
 }
