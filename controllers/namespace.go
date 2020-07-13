@@ -11,7 +11,7 @@ import (
 
 /**
  *  NamespaceController provides k8s namespace controller
- *//
+ */
 type NamespaceController struct{}
 
 var namespaceModel = new(models.NamespaceModel)
