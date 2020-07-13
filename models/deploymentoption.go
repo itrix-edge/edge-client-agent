@@ -46,6 +46,17 @@ func (u *DeploymentOption) BeforeSave(gorm *gorm.DB) (err error) {
 	u.OptionsSerialized = u.SerializeValue(u.Options)
 	u.DeploymentTemplateSerialized = u.SerializeValue(u.DeploymentTemplate)
 	u.ServiceTemplateSerialized = u.SerializeValue(u.ServiceTemplate)
+
+	return
+}
+
+// AfterSave apply new hook into this deployment option
+func (u *DeploymentOption) AfterSave(gorm *gorm.DB) (err error) {
+	if len(u.Hooks) == 0 {
+		var hook = Hook{Name: u.Namespace + "." + u.DeploymentTemplate.Name, DeploymentOptionID: u.ID}
+		gorm.Save(&hook)
+		u.Hooks = append(u.Hooks, hook)
+	}
 	return
 }
 

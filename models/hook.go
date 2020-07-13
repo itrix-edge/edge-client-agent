@@ -1,12 +1,17 @@
 package models
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"log"
+	"math"
 	"time"
 
 	"github.com/itrix-edge/edge-client-agent/db"
 	"gorm.io/gorm"
 )
+
+const HashLength = 32
 
 type Hook struct {
 	// gorm.Model
@@ -15,9 +20,31 @@ type Hook struct {
 	UpdatedAt          time.Time      `json:"updated_at"`
 	DeletedAt          gorm.DeletedAt `gorm:"index" json:"deleted_at"`
 	Name               string         `json:"name"`
-	Key                string         `json:"key"`
+	Key                string         `gorm:"unique_index" json:"key"`
 	DeploymentOptionID uint           `json:"deplyoment_option_id"`
 	// DeploymentOption DeploymentOption `json:"deployment_option"`
+}
+
+func (m Hook) randomBase16String(l int) string {
+	buff := make([]byte, int(math.Round(float64(l)/2)))
+	rand.Read(buff)
+	str := hex.EncodeToString(buff)
+	return str[:l]
+}
+
+// BeforeSave create key automatic
+func (m *Hook) BeforeSave(gorm *gorm.DB) (err error) {
+	if !(m.ID != 0) {
+		m.Key = m.randomBase16String(HashLength)
+	}
+	return
+}
+
+// BeforeUpdate remove custom key
+func (m *Hook) BeforeUpdate(gorm *gorm.DB) (err error) {
+	// Omit key string changes.
+	m.Key = ""
+	return
 }
 
 // HookModel
