@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/stevennick/edge-client-agent/models"
+	"github.com/itrix-edge/edge-client-agent/models"
 )
 
 type DeploymentOptionController struct{}

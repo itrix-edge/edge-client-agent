@@ -6,8 +6,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/stevennick/edge-client-agent/forms"
-	"github.com/stevennick/edge-client-agent/models"
+	"github.com/itrix-edge/edge-client-agent/forms"
+	"github.com/itrix-edge/edge-client-agent/models"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"

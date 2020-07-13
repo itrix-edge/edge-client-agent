@@ -3,7 +3,7 @@ package controllers
 import (
 	"net/http"
 
-	"github.com/stevennick/edge-client-agent/models"
+	"github.com/itrix-edge/edge-client-agent/models"
 	// "google.golang.org/genproto/googleapis/devtools/containeranalysis/v1beta1/deployment"
 
 	"github.com/gin-gonic/gin"

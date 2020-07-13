@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/stevennick/edge-client-agent/models"
+	"github.com/itrix-edge/edge-client-agent/models"
 
 	"github.com/gin-gonic/gin"
 )

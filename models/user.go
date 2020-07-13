@@ -3,8 +3,8 @@ package models
 import (
 	"errors"
 
-	"github.com/stevennick/edge-client-agent/db"
-	"github.com/stevennick/edge-client-agent/forms"
+	"github.com/itrix-edge/edge-client-agent/db"
+	"github.com/itrix-edge/edge-client-agent/forms"
 
 	"golang.org/x/crypto/bcrypt"
 )

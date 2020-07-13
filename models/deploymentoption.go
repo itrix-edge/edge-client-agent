@@ -9,8 +9,8 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/itrix-edge/edge-client-agent/db"
 	dynamicstruct "github.com/ompluscator/dynamic-struct"
-	"github.com/stevennick/edge-client-agent/db"
 	"gorm.io/gorm"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"

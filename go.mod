@@ -1,4 +1,4 @@
-module github.com/stevennick/edge-client-agent
+module github.com/itrix-edge/edge-client-agent
 
 go 1.14
 

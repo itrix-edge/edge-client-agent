@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/stevennick/edge-client-agent/db"
+	"github.com/itrix-edge/edge-client-agent/db"
 	"gorm.io/gorm"
 )
 

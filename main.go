@@ -26,9 +26,9 @@ import (
 	"strconv"
 
 	"github.com/gin-contrib/gzip"
+	"github.com/itrix-edge/edge-client-agent/controllers"
+	"github.com/itrix-edge/edge-client-agent/db"
 	"github.com/joho/godotenv"
-	"github.com/stevennick/edge-client-agent/controllers"
-	"github.com/stevennick/edge-client-agent/db"
 
 	//
 	// Uncomment to load all auth plugins

@@ -3,7 +3,7 @@ package controllers
 import (
 	"net/http"
 
-	"github.com/stevennick/edge-client-agent/models"
+	"github.com/itrix-edge/edge-client-agent/models"
 
 	"github.com/gin-gonic/gin"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -11,7 +11,7 @@ import (
 
 /**
  *  NamespaceController provides k8s namespace controller
- */
+ *//
 type NamespaceController struct{}
 
 var namespaceModel = new(models.NamespaceModel)

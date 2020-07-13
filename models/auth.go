@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/stevennick/edge-client-agent/db"
+	"github.com/itrix-edge/edge-client-agent/db"
 
 	"github.com/dgrijalva/jwt-go"
 	uuid "github.com/twinj/uuid"
