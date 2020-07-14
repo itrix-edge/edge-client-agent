@@ -93,6 +93,13 @@ func (m HookModel) ReadHook(id int64) *Hook {
 	return hook
 }
 
+func (m HookModel) ReadHookByKey(key string) *Hook {
+	var hook = new(Hook)
+	m.GetORM()
+	orm.Model(&hook).Where("key = ?", key).First(&hook)
+	return hook
+}
+
 func (m HookModel) UpdateHook(hook *Hook) *Hook {
 	m.GetORM()
 	orm.Model(&hook).Updates(&hook)
@@ -110,14 +117,22 @@ func (m HookModel) DeleteHook(id int64) bool {
 // 1. Get Hook obj
 // 2. Get assoicated deploymentOption obj
 // 3. Use deploymentOption obj to execute Deployment, Service (inside deploymentModel)
-func (m HookModel) ExecuteHook(id int64) bool {
-	hook := m.ReadHook(id)
+func (m HookModel) ExecuteHook(hook *Hook, options []OptionTemplate) bool {
 	m.GetExecutionModels()
-	status, err := deploymentOptionModel.ExecuteDeploymentByID(hook.DeploymentOptionID)
+	status, err := deploymentOptionModel.ExecuteDeploymentByID(hook.DeploymentOptionID, options)
 	if err != nil {
 		log.Fatal(err)
 		return false
 	}
 	log.Print(status)
 	return true
+}
+func (m HookModel) ExecuteHookByID(id int64, options []OptionTemplate) bool {
+	hook := m.ReadHook(id)
+	return m.ExecuteHook(hook, options)
+}
+
+func (m HookModel) ExecuteHookByKey(key string, options []OptionTemplate) bool {
+	hook := m.ReadHookByKey(key)
+	return m.ExecuteHook(hook, options)
 }

@@ -189,6 +189,9 @@ func main() {
 		v2.PUT("/:id", hooks.UpdateHookByID)
 		v2.DELETE("/:id", hooks.DeleteHookByID)
 		v2.POST("/:id", hooks.ExecuteHookByID)
+		v4 := v1.Group("/key")
+		v4.GET("/:key", hooks.ExecuteHookByKey)
+		v4.POST("/:key", hooks.ExecuteHookByKey)
 
 	}
 

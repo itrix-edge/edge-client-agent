@@ -1,7 +1,7 @@
 package models
 
 import (
-	v1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	// v1 "k8s.io/client-go/kubernetes/typed/core/v1"
@@ -11,20 +11,20 @@ type ServiceModel struct{}
 
 var clientsets *kubernetes.Clientset
 
-func (sm ServiceModel) getServiceList(namespace string, options metav1.ListOptions) (servicesList *v1.ServiceList) {
+func (m ServiceModel) GetServiceList(namespace string, options metav1.ListOptions) (*core.ServiceList, error) {
 	k8s := Getk8sClient()
 	servicesList, err := k8s.clientset.CoreV1().Services(namespace).List(options)
-	if err != nil {
-		panic(err.Error())
-	}
-	return servicesList
+	return servicesList, err
 }
 
-func (sm ServiceModel) getService(namespace string, name string, options metav1.GetOptions) (services *v1.Service) {
+func (m ServiceModel) GetService(namespace string, name string, options metav1.GetOptions) (*core.Service, error) {
 	k8s := Getk8sClient()
 	services, err := k8s.clientset.CoreV1().Services(namespace).Get(name, options)
-	if err != nil {
-		panic(err.Error())
-	}
-	return services
+	return services, err
+}
+
+func (m ServiceModel) CreateService(namespace string, options *core.Service) (*core.Service, error) {
+	k8s := Getk8sClient()
+	services, err := k8s.clientset.CoreV1().Services(namespace).Create(options)
+	return services, err
 }

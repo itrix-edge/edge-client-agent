@@ -35,7 +35,7 @@ type DeploymentOption struct {
 	DeploymentTemplateSerialized string            `json:"-"` // appsv1.Deployment
 	ServiceTemplate              corev1.Service    `json:"service_template" gorm:"-"`
 	ServiceTemplateSerialized    string            `json:"-"` // corev1.Service
-	Hooks                        []Hook            `json:"hooks"`
+	Hooks                        []Hook            `gorm:"foreignkey:DeploymentOptionID" json:"hooks"`
 	// Image              string            `json:"image"`
 	// Name               string            `json:"name"`
 	// Ports              []int             `json:"ports"`
@@ -78,18 +78,24 @@ func (u *DeploymentOption) UnSerializeValue(values string, v interface{}) {
 }
 
 // AfterFind Handle serialized to json optionserialized to struct
+// apply related hook into this deployment option
 func (u *DeploymentOption) AfterFind(gorm *gorm.DB) (err error) {
 	u.UnSerializeValue(u.OptionsSerialized, &u.Options)
 	u.UnSerializeValue(u.DeploymentTemplateSerialized, &u.DeploymentTemplate)
 	u.UnSerializeValue(u.ServiceTemplateSerialized, &u.ServiceTemplate)
+	gorm.Where("deployment_option_id = ?", u.ID).Find(&u.Hooks)
 	return
 }
 
 var deploymentModel *DeploymentModel
+var serviceModel *ServiceModel
 
 func (m DeploymentOptionModel) GetExecutionModels() {
 	if deploymentModel == nil {
 		deploymentModel = new(DeploymentModel)
+	}
+	if serviceModel == nil {
+		serviceModel = new(ServiceModel)
 	}
 }
 
@@ -142,7 +148,7 @@ func (m DeploymentOptionModel) Migrate() {
 	}
 }
 
-func (m DeploymentOptionModel) ExecuteDeploymentByID(id uint) (*appsv1.Deployment, error) {
+func (m DeploymentOptionModel) ExecuteDeploymentByID(id uint, options []OptionTemplate) (*appsv1.Deployment, error) {
 	// Init related models
 	m.GetExecutionModels()
 	m.GetORM()
@@ -150,18 +156,38 @@ func (m DeploymentOptionModel) ExecuteDeploymentByID(id uint) (*appsv1.Deploymen
 	// fetch DeploymentOption
 	deployOption := m.GetDeploymentOptionByID(id)
 
-	// Apply Template
-	// t := template.Must(template.New("Deployment").Parse(deployOption.DeploymentTemplate))
-
-	buf := m.ApplyTemplate("Deployment", deployOption.DeploymentTemplateSerialized, deployOption.Options)
+	// Apply Template to Deployment & Service
+	var deplyomentTemplate []byte
+	var serviceTemplate []byte
+	if len(options) > 0 {
+		// if len(options) > 0 || len(deployOption.Options) > 0 {
+		var depBuf, svcBuf bytes.Buffer
+		if options != nil {
+			depBuf = m.ApplyTemplate("Deployment", deployOption.DeploymentTemplateSerialized, options)
+			svcBuf = m.ApplyTemplate("Service", deployOption.ServiceTemplateSerialized, options)
+			// } else {
+			// 	// Use default options array
+			// 	depBuf = m.ApplyTemplate("Deployment", deployOption.DeploymentTemplateSerialized, deployOption.Options)
+			// 	svcBuf = m.ApplyTemplate("Service", deployOption.ServiceTemplateSerialized, deployOption.Options)
+		}
+		deplyomentTemplate = depBuf.Bytes()
+		serviceTemplate = svcBuf.Bytes()
+	} else {
+		deplyomentTemplate = []byte(deployOption.DeploymentTemplateSerialized)
+		serviceTemplate = []byte(deployOption.ServiceTemplateSerialized)
+	}
 
 	// Encoding to struct
 	deployment := appsv1.Deployment{}
-	json.Unmarshal(buf.Bytes(), &deployment)
+	json.Unmarshal(deplyomentTemplate, &deployment)
+	service := corev1.Service{}
+	json.Unmarshal(serviceTemplate, &service)
 
 	// Apply deployment to cluster
-	deployresult, err := deploymentModel.CreateDeployment(deployOption.Namespace, &deployment)
-	return deployresult, err
+	deployresult, deperr := deploymentModel.CreateDeployment(deployOption.Namespace, &deployment)
+	// serviceresult, svcerr := serviceModel.CreateService(deployOption.Namespace, &service)
+	serviceModel.CreateService(deployOption.Namespace, &service)
+	return deployresult, deperr
 }
 
 // ApplyTemplate apply options to the target article

@@ -42,13 +42,26 @@ func (m HookController) ReadHookByID(c *gin.Context) {
 	}
 }
 
+func (m HookController) ExecuteHookByKey(c *gin.Context) {
+	key := c.Param("key")
+	var postData []models.OptionTemplate
+	if c.Request.Method == "POST" {
+		postData = []models.OptionTemplate{}
+		if err := c.ShouldBindJSON(&postData); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
+	}
+	status := hookModel.ExecuteHookByKey(key, postData)
+	c.JSON(http.StatusOK, gin.H{"status": status})
+}
+
 func (m HookController) ExecuteHookByID(c *gin.Context) {
 	id := c.Param("id")
 	id64, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
 		log.Fatal("Error parse id to int64.")
 	}
-	status := hookModel.ExecuteHook(id64)
+	status := hookModel.ExecuteHookByID(id64, nil)
 	c.JSON(http.StatusOK, gin.H{"status": status})
 }
 
