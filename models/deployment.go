@@ -4,36 +4,14 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 	v1 "k8s.io/client-go/kubernetes/typed/apps/v1"
-	"k8s.io/client-go/rest"
 )
 
 type DeploymentModel struct{}
 
-// var clientset kubernetes.Clientset
-
-// func (m DeploymentModel) init() {
-// 	config, err := rest.InClusterConfig()
-// 	if err != nil {
-// 		panic(err.Error())
-// 	}
-// 	// creates the clientset
-// 	localclientset, err := kubernetes.NewForConfig(config)
-// 	if err != nil {
-// 		panic(err.Error())
-// 	}
-// 	clientset = *localclientset
-// }
-
 // GetDeploymentsClient function for testing NS exporting
 func (m DeploymentModel) GetDeploymentsClient(namespace string) (v1.DeploymentInterface, error) {
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		panic(err.Error())
-	}
-	// creates the clientset
-	clientset, err := kubernetes.NewForConfig(config)
+	clientset, err := GetClientSet()
 	if err != nil {
 		panic(err.Error())
 	}
@@ -98,44 +76,3 @@ func (m DeploymentModel) DeleteDeployment(namespace string, name string, deleteO
 		return true
 	}
 }
-
-// func (m DeploymentModel) GetDeploymentOption(plainOptions DeploymentOptions) *appsv1.Deployment {
-// 	deployment := &appsv1.Deployment{
-// 		ObjectMeta: metav1.ObjectMeta{
-// 			Name: "deployment",
-// 		},
-// 		Spec: appsv1.DeploymentSpec{
-// 			Replicas: int32Ptr(2),
-// 			Selector: &metav1.LabelSelector{
-// 				MatchLabels: map[string]string{
-// 					"app": plainOptions.name,
-// 				},
-// 			},
-// 			Template: corev1.PodTemplateSpec{
-// 				ObjectMeta: metav1.ObjectMeta{
-// 					Labels: map[string]string{
-// 						"app": plainOptions.name,
-// 					},
-// 				},
-// 				Spec: corev1.PodSpec{
-// 					Containers: []corev1.Container{
-// 						{
-// 							Name:  plainOptions.name,
-// 							Image: plainOptions.image,
-// 							Ports: []corev1.ContainerPort{
-// 								{
-// 									Name:          "http",
-// 									Protocol:      corev1.ProtocolTCP,
-// 									ContainerPort: 80,
-// 								},
-// 							},
-// 						},
-// 					},
-// 				},
-// 			},
-// 		},
-// 	}
-// 	return deployment
-// }
-
-func int32Ptr(i int32) *int32 { return &i }

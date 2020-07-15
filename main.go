@@ -28,6 +28,7 @@ import (
 	"github.com/gin-contrib/gzip"
 	"github.com/itrix-edge/edge-client-agent/controllers"
 	"github.com/itrix-edge/edge-client-agent/db"
+	"github.com/itrix-edge/edge-client-agent/models"
 	"github.com/joho/godotenv"
 
 	//
@@ -138,6 +139,14 @@ func main() {
 		//Start Redis on database 1 - it's used to store the JWT but you can use it for anythig else
 		//Example: db.GetRedis().Set(KEY, VALUE, at.Sub(now)).Err()
 		// db.InitRedis("1")
+	}
+
+	// Kubernetes client
+	kubeconfig := os.Getenv("KUBE_CONFIG")
+	if len(kubeconfig) == 0 {
+		models.InitKuberClient(nil)
+	} else {
+		models.InitKuberClient(&kubeconfig)
 	}
 
 	v1 := r.Group("/v1")

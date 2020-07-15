@@ -18,8 +18,8 @@ require (
 	google.golang.org/appengine v1.6.6 // indirect
 	gorm.io/driver/postgres v0.2.5
 	gorm.io/gorm v0.2.19
-	k8s.io/api v0.18.3
-	k8s.io/apimachinery v0.18.3
+	k8s.io/api v0.16.10
+	k8s.io/apimachinery v0.16.10
 	k8s.io/client-go v0.16.10
 	k8s.io/utils v0.0.0-20200603063816-c1c6865ac451 // indirect
 )
