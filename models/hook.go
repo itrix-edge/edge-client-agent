@@ -119,12 +119,16 @@ func (m HookModel) DeleteHook(id int64) bool {
 // 3. Use deploymentOption obj to execute Deployment, Service (inside deploymentModel)
 func (m HookModel) ExecuteHook(hook *Hook, options []OptionTemplate) bool {
 	m.GetExecutionModels()
-	status, err := deploymentOptionModel.ExecuteDeploymentByID(hook.DeploymentOptionID, options)
-	if err != nil {
-		log.Fatal(err)
+	depStatus, svcStatus, err1, err2 := deploymentOptionModel.ExecuteDeploymentByID(hook.DeploymentOptionID, options)
+	if err1 != nil || err2 != nil {
+		log.Fatal(err1)
+		log.Fatal(err2)
 		return false
 	}
-	log.Print(status)
+	log.Print("Successfuly execute deployment: " + depStatus.ObjectMeta.SelfLink)
+	log.Print("Successfuly execute service: " + svcStatus.ObjectMeta.SelfLink)
+	log.Print(depStatus)
+	log.Print(svcStatus)
 	return true
 }
 func (m HookModel) ExecuteHookByID(id int64, options []OptionTemplate) bool {

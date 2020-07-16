@@ -20,3 +20,28 @@ func (m NamespaceModel) GetNamespaces(opts v1.ListOptions) (rv1.NamespaceList, e
 	}
 	return *list, nil
 }
+
+// GetNamespace function for testing NS exporting
+func (m NamespaceModel) GetNamespace(namespace string, opts v1.GetOptions) (*rv1.Namespace, error) {
+	// creates the clientset
+	clientset, err := GetClientSet()
+	if err != nil {
+		panic(err.Error())
+	}
+	ns, err := clientset.CoreV1().Namespaces().Get(namespace, opts)
+	if err != nil {
+		return ns, err
+	}
+	return ns, nil
+}
+
+// CreateNamespace function for testing NS exporting
+func (m NamespaceModel) CreateNamespace(opts *rv1.Namespace) (*rv1.Namespace, error) {
+	// creates the clientset
+	clientset, err := GetClientSet()
+	if err != nil {
+		panic(err.Error())
+	}
+	ns, err := clientset.CoreV1().Namespaces().Create(opts)
+	return ns, nil
+}

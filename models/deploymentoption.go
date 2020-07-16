@@ -14,6 +14,7 @@ import (
 	"gorm.io/gorm"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type DeploymentOptionModel struct{}
@@ -89,6 +90,7 @@ func (u *DeploymentOption) AfterFind(gorm *gorm.DB) (err error) {
 
 var deploymentModel *DeploymentModel
 var serviceModel *ServiceModel
+var namespaceModel *NamespaceModel
 
 func (m DeploymentOptionModel) GetExecutionModels() {
 	if deploymentModel == nil {
@@ -96,6 +98,9 @@ func (m DeploymentOptionModel) GetExecutionModels() {
 	}
 	if serviceModel == nil {
 		serviceModel = new(ServiceModel)
+	}
+	if namespaceModel == nil {
+		namespaceModel = new(NamespaceModel)
 	}
 }
 
@@ -148,7 +153,7 @@ func (m DeploymentOptionModel) Migrate() {
 	}
 }
 
-func (m DeploymentOptionModel) ExecuteDeploymentByID(id uint, options []OptionTemplate) (*appsv1.Deployment, error) {
+func (m DeploymentOptionModel) ExecuteDeploymentByID(id uint, options []OptionTemplate) (*appsv1.Deployment, *corev1.Service, error, error) {
 	// Init related models
 	m.GetExecutionModels()
 	m.GetORM()
@@ -183,11 +188,20 @@ func (m DeploymentOptionModel) ExecuteDeploymentByID(id uint, options []OptionTe
 	service := corev1.Service{}
 	json.Unmarshal(serviceTemplate, &service)
 
+	// Query namespace and create namespace if required
+	ns, err := namespaceModel.GetNamespace(deployOption.Namespace, v1.GetOptions{})
+	if err != nil || ns == nil {
+		var namespace = corev1.Namespace{}
+		namespace.Name = deployOption.Namespace
+		namespace.Namespace = deployOption.Namespace
+		ns, err = namespaceModel.CreateNamespace(&namespace)
+	}
+
 	// Apply deployment to cluster
 	deployresult, deperr := deploymentModel.CreateDeployment(deployOption.Namespace, &deployment)
-	// serviceresult, svcerr := serviceModel.CreateService(deployOption.Namespace, &service)
-	serviceModel.CreateService(deployOption.Namespace, &service)
-	return deployresult, deperr
+	serviceresult, svcerr := serviceModel.CreateService(deployOption.Namespace, &service)
+	// serviceModel.CreateService(deployOption.Namespace, &service)
+	return deployresult, serviceresult, deperr, svcerr
 }
 
 // ApplyTemplate apply options to the target article
