@@ -32,17 +32,22 @@ apiVersion: v1
 data:
   .env: |
     ENV=LOCAL
+    APP_DEBUG=TRUE
     PORT=9000
     SSL=FALSE
-    DB=FALSE
+    DB=TRUE
     DB_USER="postgres"
-    DB_PASS="post"
-    DB_NAME="edge-client-db"
-    ACCESS_SECRET="-----------------------"
-    REFERSH_SECRET="-----------------------"
-    REDIS_SECRET="-----------------------"
+    DB_PASS="postgres"
+    DB_HOST="postgres-external.default.svc"
+    DB_PORT="5432"
+    DB_NAME="postgresdb"
+    DB_OPTIONS="sslmode=disable TimeZone=Asia/Taipei"
+    ACCESS_SECRET="ashasdjhjhjadhasdaa123"
+    REFERSH_SECRET="hjsajdhkjhf41jhagggdga"
+    REDIS_SECRET="hjfhjhasdfkyuy2"
     REDIS_HOST=127.0.0.1:6379
     REDIS_PASSWORD=
+    KUBE_CONFIG=
 kind: ConfigMap
 metadata:
   namespace: edge-client-agent
@@ -78,7 +83,7 @@ spec:
         run: edge-agent
     spec:
       containers:
-      - image: stevennick/edge-client-agent:6bb879a-arm64
+      - image: itrixedge/edge-client-agent:1104874-arm64
         imagePullPolicy: IfNotPresent
         name: edge-agent
         volumeMounts:
