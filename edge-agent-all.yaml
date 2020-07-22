@@ -83,7 +83,7 @@ spec:
         run: edge-agent
     spec:
       containers:
-      - image: itrixedge/edge-client-agent:1104874-arm64
+      - image: itrixedge/edge-client-agent:08544cf-arm64
         imagePullPolicy: IfNotPresent
         name: edge-agent
         volumeMounts:
